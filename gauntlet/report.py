@@ -14,6 +14,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .grader import GRADING_VERSION
+from .validate import safe_slug
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "web" / "templates"
@@ -27,8 +28,7 @@ VERDICT_CLASS = {"PASS": "pass", "FAIL": "fail", "ABSTAINED": "abstain", "ERROR"
 
 
 def slugify(name: str) -> str:
-    s = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
-    return s or "team"
+    return safe_slug(name)
 
 
 def display_team(name: str) -> str:
