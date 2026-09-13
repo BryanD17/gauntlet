@@ -2,6 +2,35 @@
 
 An AI agent that red-teams other AI agents before they ever reach production.
 
+*Built at the Multi-App AI Agent Hackathon. Docs: [Quickstart](#quickstart) · [Harness kit](docs/HARNESS.md) · [Threat model](docs/THREAT-MODEL.md) · [Security](docs/SECURITY.md) · [Architecture](docs/ARCHITECTURE.md).*
+
+## Quickstart
+
+Zero to a grade in five minutes. Two reference agents ship in the repo, so the whole loop
+demos with no external participants.
+
+```bash
+# 1. install (a fresh venv)
+python -m venv .venv
+. .venv/bin/activate           # Windows: .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+cp .env.example .env           # Windows: Copy-Item .env.example .env  (fill in keys, all optional)
+
+# 2. start the two reference agents (separate terminals)
+python agents/naive_agent.py       # port 8001, grades F
+python agents/hardened_agent.py    # port 8002, grades A
+
+# 3. examine them
+python -m gauntlet.cli run --target http://localhost:8001 --team "Naive Reference"
+python -m gauntlet.cli run --target http://localhost:8002 --team "Hardened Reference" --source agents/hardened_agent.py
+```
+
+Open `site/report-naive-reference.html` and `site/leaderboard.html`. Installing the package
+(`pip install -e .`) also gives you a `gauntlet` command that works the same way.
+
+All keys in `.env` are optional: without them the run still grades and renders, and each
+integration (Slack, Linear, GitHub PRs, the Anthropic fixer) degrades to a printed warning.
+
 ## The problem
 
 Teams everywhere are shipping AI agents that read messages, move money, edit tickets, and write to real systems. Almost none of those agents have been tested against the conditions that actually break them. They work when the input is friendly. Nobody knows what they do when an email contains a hidden instruction, when the same event arrives twice, or when an API dies in the middle of a write. Today, teams discover those answers in production, at the cost of their users.
@@ -52,6 +81,30 @@ Failures do not end at the report. For each one, Gauntlet analyzes the evidence 
 ## Running Gauntlet
 
 Configuration lives in a local .env file. Copy .env.example and fill in your keys. One command runs the full examination: the attack suite, the grade, the report page, the leaderboard update, the Slack post, and the fix pull requests. The repository includes two reference agents, one naive and one hardened, so the entire loop can be demonstrated end to end with no external participants.
+
+### Flags
+
+- `--target <url>` — the running agent's base URL (required).
+- `--team "<name>"` — team name for the report and leaderboard (required).
+- `--repo owner/name` — open fix PRs on this repo (optional).
+- `--source <path>` — the target's source file to patch and its path in the repo (default `agents/naive_agent.py`).
+- `--no-fix` — skip the fixer and PRs entirely, so no source leaves the machine.
+- `--allow-remote` — permit a non-local target host (off by default; an SSRF guard refuses `file:`, cloud-metadata, and non-canonical numeric hosts).
+- `--timeout <seconds>` — per-request timeout for the target (default 10).
+
+### Replaying a run offline
+
+```bash
+python -m gauntlet.cli replay --run runs/<timestamp>
+```
+
+Re-renders a report card purely from the stored manifest — no target, no network. Useful if wifi dies mid-demo.
+
+### Exit codes
+
+- `0` — run completed and the grade was produced (this stands even if an integration degraded; warnings are printed and recorded in the manifest).
+- `2` — the target was unreachable for every scenario. Grade F is recorded with ERROR panels.
+- `3` — configuration error (bad flags, malformed `--repo`, refused `--target`). Nothing external is touched.
 
 ## The harness contract
 
