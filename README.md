@@ -4,6 +4,8 @@
 
 An AI agent that red-teams other AI agents before they ever reach production.
 
+**Live site: https://gauntlet-stayfit.vercel.app**
+
 *Built at the Multi-App AI Agent Hackathon. Docs: [Quickstart](#quickstart) · [Harness kit](docs/HARNESS.md) · [Threat model](docs/THREAT-MODEL.md) · [Security](docs/SECURITY.md) · [Architecture](docs/ARCHITECTURE.md).*
 
 ## Quickstart
