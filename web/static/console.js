@@ -2,6 +2,7 @@
   "use strict";
 
   var activeStream = null;
+  var HARNESS_DOCS_URL = "https://github.com/BryanD17/gauntlet#the-harness-contract";
 
   function normalizeTarget(value) {
     return String(value || "").trim().replace(/\/task\/?$/, "").replace(/\/$/, "");
@@ -121,6 +122,10 @@
   function showError(message) {
     setRunning(false, message || "The examination could not continue. Check the target and try again.");
     text("run-label", "Examination stopped");
+    var links = document.getElementById("result-links");
+    links.replaceChildren();
+    addResultLink(links, "Check the harness contract", HARNESS_DOCS_URL);
+    links.hidden = false;
   }
 
   function connectEvents(runId) {
@@ -187,7 +192,8 @@
     verdictClass: verdictClass,
     gradeClass: gradeClass,
     renderAttack: renderAttack,
-    renderResult: renderResult
+    renderResult: renderResult,
+    showError: showError
   };
 
   if (typeof document !== "undefined") {

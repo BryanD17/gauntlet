@@ -43,6 +43,58 @@ console.log(JSON.stringify(globalThis.GauntletUI.buildRunPayload(form)));
     }
 
 
+def test_console_error_points_to_harness_contract_and_clears_stale_links():
+    result = run_node(r"""
+require('./web/static/console.js');
+
+class Node {
+  constructor(id) {
+    this.id = id;
+    this.textContent = '';
+    this.hidden = true;
+    this.children = [];
+    this.attributes = {};
+    this.disabled = false;
+  }
+  appendChild(child) { this.children.push(child); return child; }
+  replaceChildren() { this.children = []; }
+  setAttribute(name, value) { this.attributes[name] = value; }
+}
+
+const ids = {};
+['run-button', 'examination', 'form-status', 'run-label', 'result-links']
+  .forEach((id) => { ids[id] = new Node(id); });
+ids['result-links'].children.push({textContent: 'Old result', href: '/report/old'});
+global.document = {
+  getElementById: (id) => ids[id],
+  createElement: (tag) => new Node(tag)
+};
+
+globalThis.GauntletUI.showError('Target did not answer.');
+
+console.log(JSON.stringify({
+  status: ids['form-status'].textContent,
+  runLabel: ids['run-label'].textContent,
+  buttonDisabled: ids['run-button'].disabled,
+  busy: ids['examination'].attributes['aria-busy'],
+  linksHidden: ids['result-links'].hidden,
+  links: ids['result-links'].children.map((link) => [link.textContent, link.href])
+}));
+""")
+
+    assert result == {
+        "status": "Target did not answer.",
+        "runLabel": "Examination stopped",
+        "buttonDisabled": False,
+        "busy": "false",
+        "linksHidden": False,
+        "links": [[
+            "Check the harness contract",
+            "https://github.com/BryanD17/gauntlet#the-harness-contract",
+        ]],
+    }
+
+
 def test_mocked_sse_sequence_maps_verdicts_and_renders_final_grade():
     result = run_node(r"""
 require('./web/static/console.js');

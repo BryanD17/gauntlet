@@ -8,3 +8,6 @@ __pycache__/
 .venv/
 *.egg-info/
 collab/
+.agents/
+.claude/
+skills-lock.json

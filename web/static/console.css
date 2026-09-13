@@ -98,7 +98,10 @@ small { color: var(--muted); font-size: 13px; }
 .plate-heading span { color: var(--muted); font-size: 13px; }
 
 /* ---------------- Landing ---------------- */
-.hero { padding-block: 72px 40px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
+.hero { position: relative; overflow: hidden; padding-block: 72px 40px; display: grid; grid-template-columns: 1.05fr .95fr; gap: 48px; align-items: center; }
+.hero > .hero-copy, .hero > .examination-demo { position: relative; z-index: 2; }
+.hero-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.16; z-index: 0; pointer-events: none; }
+.hero-seal { position: absolute; right: -8%; top: 50%; transform: translateY(-50%); width: min(560px, 62%); opacity: 0.09; z-index: 0; pointer-events: none; filter: saturate(0.8); }
 .hero-copy h1 { max-width: 15ch; }
 .hero-copy p { color: var(--muted); font-size: 19px; margin: 20px 0 30px; max-width: 46ch; }
 .examination-demo { padding: 22px; }
@@ -231,4 +234,5 @@ td .grade-f, td.grade-f { color: var(--fail); font-family: var(--display); font-
 
 @media (prefers-reduced-motion: reduce) {
   .attack-plate.is-resolved, .grade-strike, .button-primary:hover { animation: none; transform: none; }
+  .hero-media { display: none; }
 }

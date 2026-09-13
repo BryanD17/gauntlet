@@ -2,8 +2,8 @@
   "use strict";
 
   function gradeClass(letter) {
-    if (letter === "A" || letter === "B") return "grade-positive";
-    if (letter === "C") return "grade-warning";
+    if (letter === "A") return "grade-positive";
+    if (letter === "B" || letter === "C") return "grade-warning";
     return "grade-negative";
   }
 
