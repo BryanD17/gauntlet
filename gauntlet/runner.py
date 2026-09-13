@@ -29,8 +29,13 @@ class Target:
         self._client.close()
 
 
-def run_suite(target_url: str, timeout: float = 10.0) -> tuple[list, Path]:
-    """Run every attack against target_url, write evidence, return (results, run_dir)."""
+def run_suite(target_url: str, timeout: float = 10.0, on_result=None) -> tuple[list, Path]:
+    """Run every attack against target_url, write evidence, return (results, run_dir).
+
+    on_result, if given, is called with each Result as it resolves — used by the web
+    console to stream attacks live. It changes nothing about the grade or evidence;
+    the CLI calls run_suite without it and gets byte-identical output.
+    """
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     # Unique directory so two runs in the same second cannot overwrite each other's
     # evidence. A uuid suffix + exist_ok=False guarantees uniqueness without tempfile's
@@ -49,6 +54,11 @@ def run_suite(target_url: str, timeout: float = 10.0) -> tuple[list, Path]:
             result = attack(target, run_id=run_id)
             results.append(result)
             print(f"  [{result.verdict:>9}] {result.title}: {result.detail}")
+            if on_result is not None:
+                try:
+                    on_result(result)
+                except Exception:  # noqa: BLE001 - a stream consumer must never break a run
+                    pass
     finally:
         target.close()
 
