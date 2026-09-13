@@ -38,7 +38,7 @@ def run_suite(target_url: str) -> tuple[list, Path]:
     results = []
     try:
         for attack in ALL_ATTACKS:
-            result = attack(target)
+            result = attack(target, run_id=ts)
             results.append(result)
             print(f"  [{result.verdict:>9}] {result.title}: {result.detail}")
     finally:
