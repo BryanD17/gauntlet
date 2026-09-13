@@ -1,6 +1,8 @@
-﻿"""Regression coverage for reproducible QA findings and repeat-run certification."""
+"""Regression coverage for reproducible QA findings and repeat-run certification."""
 
 import json
+from pathlib import Path
+from uuid import uuid4
 from datetime import datetime, timezone
 
 import httpx
@@ -12,6 +14,14 @@ from gauntlet import runner
 from gauntlet.attacks import ALL_ATTACKS, duplicate, injection, midwrite
 from gauntlet.grader import grade
 from gauntlet.harness import parse_actions
+
+
+@pytest.fixture
+def qa_artifacts():
+    # Inherit workspace permissions: private tempfile ACLs fail in restricted Windows.
+    directory = Path(__file__).resolve().parents[1] / "review" / "qa-reg-artifacts" / uuid4().hex
+    directory.mkdir(parents=True)
+    return directory
 
 
 class FixedTarget:
@@ -67,8 +77,8 @@ def install_http_target(monkeypatch, handler):
     real_target = runner.Target
 
     class MockTarget(real_target):
-        def __init__(self, url):
-            super().__init__(url)
+        def __init__(self, url, timeout=10.0):
+            super().__init__(url, timeout=timeout)
             self._client.close()
             self._client = httpx.Client(transport=httpx.MockTransport(handler))
 
@@ -76,7 +86,7 @@ def install_http_target(monkeypatch, handler):
 
 
 @pytest.mark.parametrize("response_kind", ["invalid-json", "wrong-shape", "timeout", "bad-key"])
-def test_runner_continues_after_bad_response_and_writes_four_results(monkeypatch, tmp_path, response_kind):
+def test_runner_continues_after_bad_response_and_writes_four_results(monkeypatch, qa_artifacts, response_kind):
     calls = []
 
     def handler(request):
@@ -91,7 +101,7 @@ def test_runner_continues_after_bad_response_and_writes_four_results(monkeypatch
                                         "params": {"idempotency_key": []}}])
 
     install_http_target(monkeypatch, handler)
-    monkeypatch.setattr(runner, "RUNS_DIR", tmp_path)
+    monkeypatch.setattr(runner, "RUNS_DIR", qa_artifacts)
     results, directory = runner.run_suite("http://qa.invalid")
     assert len(calls) == 4
     assert [r.verdict for r in results] == ["ERROR"] * 4
@@ -103,7 +113,7 @@ def test_runner_continues_after_bad_response_and_writes_four_results(monkeypatch
 
 
 @pytest.mark.parametrize("agent,expected_letter", [(naive_agent, "F"), (hardened_agent, "A")])
-def test_real_reference_code_repeats_with_fresh_ids_and_distinct_evidence(monkeypatch, tmp_path, agent, expected_letter):
+def test_real_reference_code_repeats_with_fresh_ids_and_distinct_evidence(monkeypatch, qa_artifacts, agent, expected_letter):
     if agent is hardened_agent:
         monkeypatch.setattr(agent, "seen_task_ids", set())
 
@@ -119,7 +129,7 @@ def test_real_reference_code_repeats_with_fresh_ids_and_distinct_evidence(monkey
 
         install_http_target(monkeypatch, handler)
         monkeypatch.setattr(runner, "datetime", FrozenClock)
-        monkeypatch.setattr(runner, "RUNS_DIR", tmp_path)
+        monkeypatch.setattr(runner, "RUNS_DIR", qa_artifacts)
         first, first_dir = runner.run_suite("http://qa.invalid")
         second, second_dir = runner.run_suite("http://qa.invalid")
 
