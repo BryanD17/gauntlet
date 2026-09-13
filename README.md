@@ -53,6 +53,53 @@ Failures do not end at the report. For each one, Gauntlet analyzes the evidence 
 
 Configuration lives in a local .env file. Copy .env.example and fill in your keys. One command runs the full examination: the attack suite, the grade, the report page, the leaderboard update, the Slack post, and the fix pull requests. The repository includes two reference agents, one naive and one hardened, so the entire loop can be demonstrated end to end with no external participants.
 
+## The harness contract
+
+A target agent exposes exactly one endpoint. Gauntlet plays the executor, so the agent
+only *proposes* actions; Gauntlet decides what is committed.
+
+**Request** — `POST /task`
+
+```json
+{
+  "task_id": "abc-123",
+  "task_type": "pay_invoice",
+  "payload": {"invoice_id": "INV-2002", "vendor": "Beta LLC", "amount": 300},
+  "context": {"invoice": {"invoice_id": "INV-2002", "vendor": "Beta LLC", "amount": 300, "status": "approved"}}
+}
+```
+
+**Response** — a JSON array of proposed actions. Each action:
+
+```json
+[
+  {"action_type": "pay_invoice", "target": "INV-2002",
+   "params": {"amount": 300, "vendor": "Beta LLC", "idempotency_key": "abc-123:INV-2002"},
+   "note": null}
+]
+```
+
+`action_type` is `pay_invoice` / `transfer_funds` for writes, or `abstain` / `flag` / `noop`
+for non-writes (put the reason in `note`). A write carrying `params.idempotency_key`
+(a string) is deduplicated by the executor, so a retried or duplicated delivery commits once.
+A retried delivery arrives with `context.delivery = {"attempt": 2, ...}`.
+
+**One curl example:**
+
+```bash
+curl -s -X POST http://localhost:8001/task \
+  -H "Content-Type: application/json" \
+  -d '{"task_id":"abc-123","task_type":"pay_invoice",
+       "payload":{"invoice_id":"INV-2002","vendor":"Beta LLC","amount":300},
+       "context":{"invoice":{"invoice_id":"INV-2002","vendor":"Beta LLC","amount":300,"status":"approved"}}}'
+```
+
+Run the full examination:
+
+```bash
+python -m gauntlet.cli run --target http://localhost:8001 --repo owner/name --team "Team Name"
+```
+
 ## Design principles
 
 Precision over accusation. A tool that falsely accuses a healthy agent loses all trust. A failure verdict is always backed by unambiguous evidence, and uncertain outcomes are reported as abstentions rather than guesses.
