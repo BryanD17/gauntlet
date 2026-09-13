@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Run a live Gauntlet examination against an AI agent.">
+  <title>Run an examination | Gauntlet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/console.css">
+  <script defer src="/static/console.js"></script>
+</head>
+<body class="authority-page console-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="Gauntlet home"><span class="wordmark-seal" aria-hidden="true">G</span><span>Gauntlet</span></a>
+    <nav aria-label="Primary navigation"><a aria-current="page" href="/console">Console</a><a href="/leaderboard">Leaderboard</a></nav>
+  </header>
+
+  <main id="main" class="console-main shell">
+    <section class="console-intro" aria-labelledby="console-title">
+      <h1 id="console-title">Run an examination</h1>
+      <p>Test one agent against four hostile conditions. The evidence appears as each verdict arrives.</p>
+    </section>
+
+    <section class="form-plate" aria-labelledby="target-heading">
+      <div class="plate-heading"><h2 id="target-heading">Target</h2><span>All fields stay in this run</span></div>
+      <form id="run-form" novalidate>
+        <div class="field-grid">
+          <label class="field field-wide" for="target">
+            <span>Agent /task URL</span>
+            <input id="target" name="target" type="url" required autocomplete="url" placeholder="http://localhost:8002" aria-describedby="target-help">
+            <small id="target-help">Enter the agent base URL. Gauntlet calls its /task endpoint.</small>
+          </label>
+          <label class="field" for="repo">
+            <span>GitHub repository <em>Optional</em></span>
+            <input id="repo" name="repo" type="text" autocomplete="off" placeholder="owner/repository">
+          </label>
+          <label class="field" for="team">
+            <span>Team name</span>
+            <input id="team" name="team" type="text" required autocomplete="organization" placeholder="Hardened Reference">
+          </label>
+        </div>
+
+        <div class="toggle-grid">
+          <label class="toggle" for="allow-remote">
+            <input id="allow-remote" name="allow_remote" type="checkbox">
+            <span class="toggle-control" aria-hidden="true"></span>
+            <span><strong>Allow remote host</strong><small>Only enable this for an endpoint you trust.</small></span>
+          </label>
+          <label class="toggle" for="no-fix">
+            <input id="no-fix" name="no_fix" type="checkbox">
+            <span class="toggle-control" aria-hidden="true"></span>
+            <span><strong>Keep source private</strong><small>Skip fix generation and pull requests.</small></span>
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button class="button button-primary" id="run-button" type="submit">Run examination</button>
+          <button class="button button-secondary" id="reference-button" type="button">Try the reference agent</button>
+          <p id="form-status" class="form-status" role="status" aria-live="polite">Ready for a target.</p>
+        </div>
+      </form>
+    </section>
+
+    <section id="examination" class="live-examination" aria-labelledby="examination-title" aria-busy="false">
+      <div class="plate-heading"><h2 id="examination-title">Examination record</h2><span id="run-label">Waiting to begin</span></div>
+      <div class="result-layout">
+        <ol id="attack-list" class="attack-stream" aria-live="polite" aria-label="Attack verdicts">
+          <li class="attack-plate verdict-pending" data-scenario="injection"><span><strong>Prompt injection</strong><small>Waiting for evidence</small></span><b>Pending</b></li>
+          <li class="attack-plate verdict-pending" data-scenario="duplicate"><span><strong>Duplicate delivery</strong><small>Waiting for evidence</small></span><b>Pending</b></li>
+          <li class="attack-plate verdict-pending" data-scenario="midwrite"><span><strong>Mid-write failure</strong><small>Waiting for evidence</small></span><b>Pending</b></li>
+          <li class="attack-plate verdict-pending" data-scenario="stale"><span><strong>Stale or conflicting data</strong><small>Waiting for evidence</small></span><b>Pending</b></li>
+        </ol>
+
+        <aside id="grade-panel" class="grade-panel" aria-label="Final grade" hidden>
+          <span class="grade-caption">Final grade</span>
+          <strong id="grade-letter">?</strong>
+          <span id="grade-score">Awaiting verdict</span>
+        </aside>
+      </div>
+
+      <dl id="result-stats" class="result-stats" hidden>
+        <div><dt>Attacks caught</dt><dd id="stat-caught">0</dd></div>
+        <div><dt>Attacks landed</dt><dd id="stat-landed">0</dd></div>
+        <div><dt>False alarms</dt><dd id="stat-false-alarms">0</dd></div>
+        <div><dt>Slack</dt><dd id="stat-slack">Not delivered</dd></div>
+      </dl>
+      <nav id="result-links" class="result-links" aria-label="Examination results" hidden></nav>
+    </section>
+  </main>
+
+  <footer class="site-footer shell"><span>Evidence first. Every verdict replayable.</span><nav aria-label="Footer navigation"><a href="/">Home</a><a href="/leaderboard">Leaderboard</a></nav></footer>
+</body>
+</html>

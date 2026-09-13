@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Gauntlet certification leaderboard for examined AI agents.">
+  <title>Certification leaderboard | Gauntlet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/console.css">
+  <script defer src="/static/leaderboard.js"></script>
+</head>
+<body class="authority-page leaderboard-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="Gauntlet home"><span class="wordmark-seal" aria-hidden="true">G</span><span>Gauntlet</span></a>
+    <nav aria-label="Primary navigation"><a href="/console">Console</a><a aria-current="page" href="/leaderboard">Leaderboard</a></nav>
+  </header>
+
+  <main id="main" class="leaderboard-main shell">
+    <section class="leaderboard-intro" aria-labelledby="leaderboard-title">
+      <div>
+        <h1 id="leaderboard-title">Certification leaderboard</h1>
+        <p>Ranked results from the same four-attack examination.</p>
+      </div>
+      <a class="button button-primary" href="/console">Run an examination</a>
+    </section>
+
+    <section class="leaderboard-plate" aria-label="Ranked examination results">
+      <div class="plate-heading"><span>Current standings</span><span id="board-status" role="status" aria-live="polite">Loading records</span></div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col">Grade</th><th scope="col">Score</th><th scope="col">Attacks survived</th><th scope="col">Evidence</th></tr></thead>
+          <tbody id="leaderboard-body"></tbody>
+        </table>
+      </div>
+      <p id="board-empty" class="empty-state" hidden>No examinations have been recorded yet.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer shell"><span>One suite. Comparable evidence.</span><nav aria-label="Footer navigation"><a href="/">Home</a><a href="/console">Console</a></nav></footer>
+</body>
+</html>

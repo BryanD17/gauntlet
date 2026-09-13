@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import tempfile
+import threading
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -25,6 +26,7 @@ SITE = ROOT / "site"
 GRADE_CLASS = {"A": "grade-pass", "B": "grade-warn", "C": "grade-warn",
                "D": "grade-fail", "F": "grade-fail"}
 VERDICT_CLASS = {"PASS": "pass", "FAIL": "fail", "ABSTAINED": "abstain", "ERROR": "error"}
+_LEADERBOARD_LOCK = threading.Lock()
 
 
 def slugify(name: str) -> str:
@@ -123,6 +125,11 @@ def render_index(naive_report: str, hardened_report: str,
 
 
 def update_leaderboard(grade, team: str, timestamp: str) -> Path:
+    with _LEADERBOARD_LOCK:
+        return _update_leaderboard(grade, team, timestamp)
+
+
+def _update_leaderboard(grade, team: str, timestamp: str) -> Path:
     _ensure_site()
     store = SITE / "leaderboard.json"
     rows = []

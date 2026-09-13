@@ -130,19 +130,42 @@ def api_leaderboard():
 
 @app.post("/api/run")
 async def api_run(request: Request):
-    body = await request.json()
-    target = str(body.get("target", "")).strip()
-    repo = (body.get("repo") or "").strip() or None
-    team = str(body.get("team", "")).strip() or "Anonymous agent"
-    no_fix = bool(body.get("no_fix", False))
-    allow_remote = bool(body.get("allow_remote", False))
+    def bad_request(message: str) -> JSONResponse:
+        return JSONResponse({"error": message, "message": message}, status_code=400)
+
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001 - malformed request bodies are client errors
+        return bad_request("Request body must be valid JSON")
+    if not isinstance(body, dict):
+        return bad_request("Request body must be a JSON object")
+
+    target = body.get("target")
+    team = body.get("team")
+    repo = body.get("repo")
+    no_fix = body.get("no_fix", False)
+    allow_remote = body.get("allow_remote", False)
+    if not isinstance(target, str) or not target.strip():
+        return bad_request("target must be a non-empty string")
+    if not isinstance(team, str) or not team.strip():
+        return bad_request("team must be a non-empty string")
+    if repo is not None and not isinstance(repo, str):
+        return bad_request("repo must be a string or null")
+    if not isinstance(no_fix, bool):
+        return bad_request("no_fix must be a boolean")
+    if not isinstance(allow_remote, bool):
+        return bad_request("allow_remote must be a boolean")
+
+    target = target.strip()
+    team = team.strip()
+    repo = repo.strip() or None if repo is not None else None
 
     # Validate before anything external (same validators as the CLI).
     try:
         validate_target(target, allow_remote=allow_remote)
         validate_repo(repo)
     except ValueError as exc:
-        return JSONResponse({"error": str(exc)}, status_code=400)
+        return bad_request(str(exc))
 
     run_id = uuid.uuid4().hex[:12]
     q: queue.Queue = queue.Queue()
@@ -217,7 +240,9 @@ def _do_run(run_id: str, target: str, repo, team: str, no_fix: bool) -> None:
                 "team": team, "grading_version": GRADING_VERSION,
             })
         except Exception as exc:  # noqa: BLE001 - never crash the server
-            _emit(q, "error", {"message": f"{type(exc).__name__}: {exc}"})
+            _emit(q, "error", {
+                "message": f"Examination stopped ({type(exc).__name__}). Check the target and try again."
+            })
         finally:
             _emit(q, "done", {})
 
