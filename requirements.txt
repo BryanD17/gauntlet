@@ -1,8 +1,8 @@
-fastapi
-uvicorn
-httpx
-anthropic
-PyGithub
-python-dotenv
-pytest
-jinja2
+fastapi==0.141.1
+uvicorn==0.52.4
+httpx==0.28.1
+anthropic==1.5.0
+PyGithub==2.10.0
+python-dotenv==1.2.3
+pytest==9.1.1
+jinja2==3.1.6

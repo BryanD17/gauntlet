@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gauntlet"
+version = "0.1.0"
+description = "An AI agent that red-teams other AI agents before they reach production."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "BryanD17" }]
+keywords = ["ai", "agents", "red-team", "security", "evaluation", "llm"]
+dependencies = [
+    "fastapi==0.141.1",
+    "uvicorn==0.52.4",
+    "httpx==0.28.1",
+    "anthropic==1.5.0",
+    "PyGithub==2.10.0",
+    "python-dotenv==1.2.3",
+    "jinja2==3.1.6",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1"]
+
+[project.scripts]
+gauntlet = "gauntlet.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/BryanD17/gauntlet"
+
+[tool.setuptools]
+packages = ["gauntlet"]
