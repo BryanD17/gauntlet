@@ -29,7 +29,7 @@ class Target:
         self._client.close()
 
 
-def run_suite(target_url: str) -> tuple[list, Path]:
+def run_suite(target_url: str, timeout: float = 10.0) -> tuple[list, Path]:
     """Run every attack against target_url, write evidence, return (results, run_dir)."""
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     # Unique directory so two runs in the same second cannot overwrite each other's
@@ -42,7 +42,7 @@ def run_suite(target_url: str) -> tuple[list, Path]:
     run_dir.mkdir(exist_ok=False)
     run_id = run_dir.name
 
-    target = Target(target_url)
+    target = Target(target_url, timeout=timeout)
     results = []
     try:
         for attack in ALL_ATTACKS:

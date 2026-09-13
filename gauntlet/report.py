@@ -5,8 +5,10 @@ re-running the same team updates its row in place instead of adding a duplicate.
 """
 
 import json
+import os
 import re
 import shutil
+import tempfile
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -42,6 +44,20 @@ def _env() -> Environment:
         loader=FileSystemLoader(str(TEMPLATES)),
         autoescape=select_autoescape(["html", "j2"]),
     )
+
+
+def _atomic_write(path: Path, text: str) -> None:
+    """Write via a temp file in the same directory then os.replace, so a concurrent
+    reader never sees a half-written leaderboard and two near-simultaneous writers
+    cannot corrupt the JSON."""
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), prefix=path.name + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
 
 
 def _ensure_site() -> None:
@@ -109,7 +125,7 @@ def update_leaderboard(grade, team: str, timestamp: str) -> Path:
         "report": f"report-{slug}.html",
     })
     rows.sort(key=lambda r: (-r["score"], r["team"]))
-    store.write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    _atomic_write(store, json.dumps(rows, indent=2))
 
     for i, row in enumerate(rows):
         row["rank"] = i + 1

@@ -4,6 +4,14 @@ For each FixProposal we create a fresh branch off the default branch, commit the
 corrected file to that branch only, and open a pull request. Main is never written.
 If anything GitHub-related fails, the patch is written to runs/<ts>/patches/ and the
 run continues.
+
+Least privilege — the ONLY write APIs this module calls are:
+  * create_git_ref        (create a new branch)
+  * update_file           (commit the fix to that branch only)
+  * create_pull           (open a pull request against the default branch)
+A fine-grained PAT scoped to the single target repo with **Contents: read/write** and
+**Pull requests: read/write** is sufficient. No other write scope is needed, and the
+default branch is never written, force-pushed, merged, or deleted.
 """
 
 import os

@@ -40,7 +40,7 @@ def _run(args) -> int:
 
     # 1. Attack suite (never raises; unreachable scenarios come back as ERROR).
     try:
-        results, run_dir = run_suite(args.target)
+        results, run_dir = run_suite(args.target, timeout=args.timeout)
     except Exception as exc:  # noqa: BLE001 - last-resort guard
         print(f"\n! Could not run the suite against {args.target}: {exc}")
         print("  Is the target agent running? Aborting cleanly.\n")
@@ -121,6 +121,11 @@ def _run(args) -> int:
         for w in warnings:
             print(f"    - {w}")
     print(f"  evidence    {run_dir}\n  done.\n")
+
+    # Exit taxonomy: 2 if the target was unreachable for every scenario, else 0
+    # (0 stands even when some integrations degraded — the core grade was delivered).
+    if results and all(r.verdict == "ERROR" for r in results):
+        return 2
     return 0
 
 
@@ -156,6 +161,8 @@ def main(argv=None) -> int:
                      help="skip the fixer and PRs entirely (no source leaves the machine)")
     run.add_argument("--allow-remote", action="store_true",
                      help="permit non-local target hosts (off by default; SSRF guard)")
+    run.add_argument("--timeout", type=float, default=10.0,
+                     help="per-request timeout in seconds for the target (default 10)")
 
     rep = sub.add_parser("replay", help="re-render a report card from a stored run, offline")
     rep.add_argument("--run", required=True, help="path to a runs/<timestamp> directory")
