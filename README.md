@@ -1,5 +1,7 @@
 # Gauntlet
 
+[![CI](https://github.com/BryanD17/gauntlet/actions/workflows/ci.yml/badge.svg)](https://github.com/BryanD17/gauntlet/actions/workflows/ci.yml)
+
 An AI agent that red-teams other AI agents before they ever reach production.
 
 *Built at the Multi-App AI Agent Hackathon. Docs: [Quickstart](#quickstart) · [Harness kit](docs/HARNESS.md) · [Threat model](docs/THREAT-MODEL.md) · [Security](docs/SECURITY.md) · [Architecture](docs/ARCHITECTURE.md).*
