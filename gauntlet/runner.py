@@ -1,7 +1,7 @@
 """Runs a target agent through all four attack scenarios and writes evidence."""
 
 import json
-import tempfile
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -32,11 +32,14 @@ class Target:
 def run_suite(target_url: str) -> tuple[list, Path]:
     """Run every attack against target_url, write evidence, return (results, run_dir)."""
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    # Atomically-unique directory so two runs in the same second cannot overwrite each
-    # other's evidence. run_id (the task-id nonce) reuses this unique name, so a healthy
-    # agent's in-memory dedupe can never bleed across runs.
+    # Unique directory so two runs in the same second cannot overwrite each other's
+    # evidence. A uuid suffix + exist_ok=False guarantees uniqueness without tempfile's
+    # owner-only ACL (which can break evidence writes in restricted runtimes). run_id
+    # (the task-id nonce) reuses this unique name, so a healthy agent's in-memory dedupe
+    # can never bleed across runs.
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
-    run_dir = Path(tempfile.mkdtemp(prefix=ts + "-", dir=RUNS_DIR))
+    run_dir = RUNS_DIR / f"{ts}-{uuid.uuid4().hex[:8]}"
+    run_dir.mkdir(exist_ok=False)
     run_id = run_dir.name
 
     target = Target(target_url)

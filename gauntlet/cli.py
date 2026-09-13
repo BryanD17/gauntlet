@@ -77,6 +77,15 @@ def _run(args) -> int:
     else:
         print("\n  (no --repo given; skipping fix PRs)")
 
+    # 6. Linear issues (best-effort, one per real failure).
+    real_failures = [r for r in results if r.verdict == "FAIL"]
+    if real_failures:
+        from .linear import file_failures
+        urls = file_failures(args.team, real_failures,
+                             report_path=str(report_path) if report_path else None)
+        for u in urls:
+            print(f"  Linear issue: {u}")
+
     print(f"\n  evidence    {run_dir}\n  done.\n")
     return 0
 
