@@ -8,6 +8,7 @@ step degrades gracefully with a printed warning; the run itself never crashes.
 """
 
 import argparse
+import math
 import sys
 import time
 from datetime import datetime, timezone
@@ -32,6 +33,8 @@ def _run(args) -> int:
     try:
         validate_target(args.target, allow_remote=args.allow_remote)
         validate_repo(args.repo)
+        if not math.isfinite(args.timeout) or args.timeout <= 0:
+            raise ValueError("Timeout must be a finite number greater than zero")
     except ValueError as exc:
         print(f"! configuration error: {exc}")
         return 3

@@ -77,6 +77,21 @@ def test_invalid_target_configuration_has_no_external_effects(monkeypatch, isola
     linear.file_failures.assert_not_called()
 
 
+@pytest.mark.parametrize("timeout", ["0", "-1", "nan", "inf", "-inf"])
+def test_invalid_timeout_has_no_external_effects(monkeypatch, isolated_cli, timeout):
+    suite = Mock(side_effect=AssertionError("invalid timeout must not run"))
+    monkeypatch.setattr(cli, "run_suite", suite)
+
+    assert cli.main(["run", "--target", "http://127.0.0.1:9001", "--team", "QA",
+                     f"--timeout={timeout}"]) == 3
+    suite.assert_not_called()
+    cli.post_to_slack.assert_not_called()
+
+
+def test_report_slug_is_bounded_for_long_team_name():
+    assert report.slugify("A" * 300) == "a" * 64
+
+
 def test_no_fix_does_not_read_source_or_generate_patch(monkeypatch, isolated_cli):
     with TestClient(naive_agent.app) as client:
         install_target(monkeypatch, client)
