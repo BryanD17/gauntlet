@@ -29,6 +29,14 @@ def slugify(name: str) -> str:
     return s or "team"
 
 
+def display_team(name: str) -> str:
+    """Operator-supplied team name shown in the pages. jinja autoescapes HTML; here we
+    also drop backslashes and control chars and cap length, so no local-path-shaped or
+    control content can render even from a hostile name."""
+    cleaned = re.sub(r"[\\\x00-\x1f\x7f]", "", str(name)).strip()
+    return cleaned[:64] or "team"
+
+
 def _env() -> Environment:
     return Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
@@ -64,7 +72,7 @@ def render_report(grade, team: str, target: str, timestamp: str) -> Path:
             ),
         })
     html = _env().get_template("report.html.j2").render(
-        team=team,
+        team=display_team(team),
         target=target,
         timestamp=timestamp,
         grade=grade,
@@ -91,7 +99,7 @@ def update_leaderboard(grade, team: str, timestamp: str) -> Path:
     slug = slugify(team)
     rows = [row for row in rows if row.get("slug") != slug]   # dedupe by team
     rows.append({
-        "team": team,
+        "team": display_team(team),
         "slug": slug,
         "letter": grade.letter,
         "score": grade.score,

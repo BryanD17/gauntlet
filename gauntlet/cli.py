@@ -19,6 +19,7 @@ from .runner import run_suite
 from .grader import grade
 from . import report, manifest
 from .notify import post_to_slack
+from .validate import validate_target, validate_repo
 
 
 def _run(args) -> int:
@@ -26,6 +27,14 @@ def _run(args) -> int:
     started = time.monotonic()
     warnings: list[str] = []
     ts_display = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    # 0. Validate inputs before touching anything external (config errors -> exit 3).
+    try:
+        validate_target(args.target, allow_remote=args.allow_remote)
+        validate_repo(args.repo)
+    except ValueError as exc:
+        print(f"! configuration error: {exc}")
+        return 3
 
     print(f"\nGAUNTLET  ::  examining {args.team}  ->  {args.target}\n")
 
@@ -145,6 +154,8 @@ def main(argv=None) -> int:
                      help="path to the target's source file (local read + repo path)")
     run.add_argument("--no-fix", action="store_true",
                      help="skip the fixer and PRs entirely (no source leaves the machine)")
+    run.add_argument("--allow-remote", action="store_true",
+                     help="permit non-local target hosts (off by default; SSRF guard)")
 
     rep = sub.add_parser("replay", help="re-render a report card from a stored run, offline")
     rep.add_argument("--run", required=True, help="path to a runs/<timestamp> directory")
