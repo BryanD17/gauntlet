@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Leaderboard · Gauntlet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header container">
+    <div class="header-identity">
+      <span class="wordmark">GAUNTLET</span>
+      
+    </div>
+    <nav aria-label="Main navigation"><a href="leaderboard.html">Leaderboard</a></nav>
+  </header>
+  <main class="container">
+    
+  <section class="leaderboard" aria-labelledby="leaderboard-title">
+    <div class="hero-heading"><p class="eyebrow">Gauntlet standings</p><h1 id="leaderboard-title">Leaderboard</h1></div>
+    <div class="table-scroll" role="region" aria-label="Ranked team results" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col">Grade</th><th scope="col">Score</th><th scope="col">Attacks survived</th><th scope="col">Report</th></tr></thead>
+        <tbody>
+          
+          <tr class="top">
+            <td class="rank">1</td>
+            <th scope="row">Hardened Reference<span class="row-timestamp">2026-09-13 19:00 UTC</span></th>
+            <td class="table-grade"><span class="grade-pass">A</span></td>
+            <td class="numeric">100</td>
+            <td class="numeric">4/4</td>
+            <td><a href="report-hardened-reference.html" aria-label="View report for Hardened Reference">View report</a></td>
+          </tr>
+          
+          <tr>
+            <td class="rank">2</td>
+            <th scope="row">Naive Reference<span class="row-timestamp">2026-09-13 19:00 UTC</span></th>
+            <td class="table-grade"><span class="grade-fail">F</span></td>
+            <td class="numeric">5</td>
+            <td class="numeric">0/4</td>
+            <td><a href="report-naive-reference.html" aria-label="View report for Naive Reference">View report</a></td>
+          </tr>
+          
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  </main>
+</body>
+</html>

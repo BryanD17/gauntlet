@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gauntlet · Certification for AI agents</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header container">
+    <div class="header-identity">
+      <span class="wordmark">GAUNTLET</span>
+      
+    </div>
+    <nav aria-label="Main navigation"><a href="leaderboard.html">Leaderboard</a></nav>
+  </header>
+  <main class="container">
+    
+  <section class="report-hero" aria-labelledby="landing-title">
+    <p class="eyebrow">Certification authority for AI agents</p>
+    <h1 id="landing-title">Gauntlet grades agents<br>before they reach production.</h1>
+    <p class="target" style="max-width:640px">
+      Point Gauntlet at a running agent. It attacks the agent through the same interface an
+      attacker would use, issues an evidence-backed letter grade, and opens a pull request that
+      fixes every failure it finds.
+    </p>
+  </section>
+
+  <section class="results" aria-labelledby="examples-title">
+    <h2 id="examples-title">Live examples</h2>
+    <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch">
+      <a class="panel fail" href="report-naive-reference.html" style="text-decoration:none;display:block">
+        <p class="eyebrow">Naive reference agent</p>
+        <span class="grade grade-fail" style="font-size:clamp(72px,10vw,96px)">F</span>
+        <p class="panel-detail">Executes injected instructions, double-pays on retries, acts on
+          stale data. Four attacks, four failures — with the evidence.</p>
+        <p class="required">View report card &rarr;</p>
+      </a>
+      <a class="panel pass" href="report-hardened-reference.html" style="text-decoration:none;display:block">
+        <p class="eyebrow">Hardened reference agent</p>
+        <span class="grade grade-pass" style="font-size:clamp(72px,10vw,96px)">A</span>
+        <p class="panel-detail">Treats content as data, dedupes with idempotency keys, abstains on
+          conflicts. Every attack caught, zero false alarms.</p>
+        <p class="required">View report card &rarr;</p>
+      </a>
+    </div>
+    <p style="margin-top:24px"><a href="leaderboard.html">See the full leaderboard &rarr;</a></p>
+  </section>
+
+  <section class="results" aria-labelledby="certified-title">
+    <h2 id="certified-title">Get your agent certified</h2>
+    <div class="panel">
+      <p class="panel-detail">Wrap your agent in one HTTP endpoint — <code>POST /task</code> in,
+        a list of proposed actions out — and Gauntlet can examine it, in any language or framework.
+        Two rules earn an A: attach idempotency keys to writes, and treat payload text as data.</p>
+      <p class="required" style="margin-top:16px">
+        <a href="https://github.com/BryanD17/gauntlet/blob/main/README.md#the-harness-contract">Read the harness adoption kit</a> &nbsp;·&nbsp;
+        <a href="https://github.com/BryanD17/gauntlet">Source on GitHub</a>
+      </p>
+    </div>
+  </section>
+
+  <footer class="page-footer">
+    <p>Built at the Multi-App AI Agent Hackathon. Weighted so safety failures cost the most.</p>
+    <a href="leaderboard.html">Leaderboard</a>
+  </footer>
+
+  </main>
+</body>
+</html>

@@ -103,6 +103,25 @@ def render_report(grade, team: str, target: str, timestamp: str) -> Path:
     return out
 
 
+REPO_URL = "https://github.com/BryanD17/gauntlet"
+
+
+def render_index(naive_report: str, hardened_report: str,
+                 leaderboard: str = "leaderboard.html") -> Path:
+    """Render the public landing page into site/index.html."""
+    _ensure_site()
+    html = _env().get_template("index.html.j2").render(
+        naive_report=naive_report,
+        hardened_report=hardened_report,
+        leaderboard=leaderboard,
+        repo_url=REPO_URL,
+        harness_url=f"{REPO_URL}/blob/main/README.md#the-harness-contract",
+    )
+    out = SITE / "index.html"
+    out.write_text(html, encoding="utf-8")
+    return out
+
+
 def update_leaderboard(grade, team: str, timestamp: str) -> Path:
     _ensure_site()
     store = SITE / "leaderboard.json"
