@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/BryanD17/gauntlet/actions/workflows/ci.yml/badge.svg)](https://github.com/BryanD17/gauntlet/actions/workflows/ci.yml)
 
+**Watch the 2-minute demo: https://youtu.be/JHMgXmLRGtw**
+
 Gauntlet is a certification authority for AI agents. It attacks a running agent the way an attacker would, grades it A to F with evidence, and opens a pull request that fixes each failure.
 
 **Live site: https://gauntlet-stayfit.vercel.app** — the landing page, two live example report cards, and the leaderboard. The run console runs locally, because it drives real integrations (GitHub, Slack, Linear, Anthropic) with your own tokens.
