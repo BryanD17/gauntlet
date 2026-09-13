@@ -1,6 +1,7 @@
 """Runs a target agent through all four attack scenarios and writes evidence."""
 
 import json
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,14 +32,18 @@ class Target:
 def run_suite(target_url: str) -> tuple[list, Path]:
     """Run every attack against target_url, write evidence, return (results, run_dir)."""
     ts = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
-    run_dir = RUNS_DIR / ts
-    run_dir.mkdir(parents=True, exist_ok=True)
+    # Atomically-unique directory so two runs in the same second cannot overwrite each
+    # other's evidence. run_id (the task-id nonce) reuses this unique name, so a healthy
+    # agent's in-memory dedupe can never bleed across runs.
+    RUNS_DIR.mkdir(parents=True, exist_ok=True)
+    run_dir = Path(tempfile.mkdtemp(prefix=ts + "-", dir=RUNS_DIR))
+    run_id = run_dir.name
 
     target = Target(target_url)
     results = []
     try:
         for attack in ALL_ATTACKS:
-            result = attack(target, run_id=ts)
+            result = attack(target, run_id=run_id)
             results.append(result)
             print(f"  [{result.verdict:>9}] {result.title}: {result.detail}")
     finally:

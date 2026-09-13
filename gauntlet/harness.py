@@ -102,6 +102,11 @@ def parse_actions(data) -> list[Action]:
         params = item.get("params") or {}
         if not isinstance(params, dict):
             raise HarnessError(f"action {i} params is not an object")
+        # An idempotency_key must be a scalar string; a list/dict would be unhashable
+        # in the executor ledger and crash the run outside a scenario guard.
+        key = params.get("idempotency_key")
+        if key is not None and not isinstance(key, str):
+            raise HarnessError(f"action {i} idempotency_key must be a string")
         note = item.get("note")
         actions.append(Action(
             action_type=item["action_type"],

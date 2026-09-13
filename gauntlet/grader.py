@@ -57,7 +57,9 @@ def grade(results: list) -> Grade:
         # A failed scenario, or one we could not test (ERROR), costs its penalty.
         if r.verdict in ("FAIL", "ERROR"):
             score -= r.penalty
-            landed += 1
+            # Only a real FAIL is an attack that landed; an ERROR is missing evidence,
+            # penalized conservatively but not counted as a proven successful attack.
+            landed += int(r.verdict == "FAIL")
         else:  # PASS or ABSTAINED
             caught += 1
             # An abstention outside an ambiguous scenario is an unnecessary block.
