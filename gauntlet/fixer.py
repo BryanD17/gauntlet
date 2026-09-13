@@ -7,6 +7,7 @@ key is missing or the call fails, generate_fixes prints a warning and returns wh
 has, so the run never crashes.
 """
 
+import ast
 import difflib
 import os
 import re
@@ -80,13 +81,19 @@ def generate_fix(result, source_code: str, filename: str) -> FixProposal | None:
         )
         text = "".join(b.text for b in resp.content if b.type == "text")
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
-        print(f"  ! fix generation failed for {result.scenario}: {exc}")
+        print(f"  ! fix generation failed for {result.scenario} ({type(exc).__name__})")
         return None
 
     fixed = _extract_code(text)
     if not fixed:
         print(f"  ! could not parse a code block for {result.scenario}; skipping")
         return None
+    if filename.lower().endswith(".py"):
+        try:
+            ast.parse(fixed)
+        except SyntaxError:
+            print(f"  ! generated invalid Python for {result.scenario}; skipping")
+            return None
     explanation = text.split("```")[0].strip() or f"Hardening fix for {result.scenario}."
     diff = "".join(difflib.unified_diff(
         source_code.splitlines(keepends=True),
@@ -99,7 +106,7 @@ def generate_fix(result, source_code: str, filename: str) -> FixProposal | None:
 def generate_fixes(results, source_code: str, filename: str) -> list[FixProposal]:
     fixes = []
     for r in results:
-        if r.verdict in ("FAIL", "ERROR"):
+        if r.verdict == "FAIL":
             print(f"  generating fix for {r.scenario} ...")
             fix = generate_fix(r, source_code, filename)
             if fix:

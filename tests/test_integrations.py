@@ -54,10 +54,13 @@ def test_slack_status_and_payload(monkeypatch, status, expected):
     assert post.call_args.kwargs["timeout"] <= 15
 
 
-def test_slack_timeout_returns_false(monkeypatch):
+def test_slack_timeout_returns_false(monkeypatch, capsys):
     monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://qa.invalid/slack")
-    monkeypatch.setattr(httpx, "post", Mock(side_effect=httpx.ReadTimeout("simulated")))
+    monkeypatch.setattr(httpx, "post", Mock(side_effect=httpx.ReadTimeout("QA_REFLECTED_MARKER")))
     assert notify.post_to_slack("QA", "F", 5, "Prompt injection") is False
+    output = capsys.readouterr().out
+    assert "ReadTimeout" in output
+    assert "QA_REFLECTED_MARKER" not in output
 
 
 def test_github_missing_token_saves_both_fallback_artifacts(artifact_dir, fix):
@@ -95,13 +98,16 @@ def test_github_updates_only_new_branch_and_opens_review_pr(monkeypatch, artifac
     assert repo.create_git_ref.call_args.kwargs == {"ref": f"refs/heads/{branch}", "sha": "base-sha"}
 
 
-def test_github_api_failure_falls_back_without_file_update(monkeypatch, artifact_dir, fix):
+def test_github_api_failure_falls_back_without_file_update(monkeypatch, artifact_dir, fix, capsys):
     monkeypatch.setenv("GITHUB_TOKEN", "qa-placeholder")
     gh = Mock()
-    gh.get_repo.side_effect = RuntimeError("simulated outage")
+    gh.get_repo.side_effect = RuntimeError("QA_REFLECTED_MARKER")
     monkeypatch.setitem(sys.modules, "github", SimpleNamespace(Github=Mock(return_value=gh), GithubException=RuntimeError))
     assert github_pr.open_fix_pr("qa/repo", fix, artifact_dir) is None
     assert (artifact_dir / "patches/injection.diff").exists()
+    output = capsys.readouterr().out
+    assert "RuntimeError" in output
+    assert "QA_REFLECTED_MARKER" not in output
 
 
 def test_fixer_without_key_never_constructs_client(monkeypatch, failure):
@@ -112,7 +118,7 @@ def test_fixer_without_key_never_constructs_client(monkeypatch, failure):
 
 
 @pytest.mark.parametrize("reply", ["No code supplied.", "```python\nsafe = True\n```", None])
-def test_fixer_response_and_api_failure_paths(monkeypatch, failure, reply):
+def test_fixer_response_and_api_failure_paths(monkeypatch, failure, reply, capsys):
     monkeypatch.setenv("ANTHROPIC_API_KEY", "qa-placeholder")
     client = Mock()
     if reply is None:
@@ -128,3 +134,7 @@ def test_fixer_response_and_api_failure_paths(monkeypatch, failure, reply):
         assert "qa-task" in prompt and "Unauthorized transfer" in prompt
     else:
         assert result is None
+        if reply is None:
+            output = capsys.readouterr().out
+            assert "RuntimeError" in output
+            assert "simulated outage" not in output

@@ -72,7 +72,7 @@ def _run(args) -> int:
         warnings.append("slack: not delivered")
 
     # 5. Fix PRs (only if a repo is given and there were failures).
-    failures = [r for r in results if r.verdict in ("FAIL", "ERROR")]
+    failures = [r for r in results if r.verdict == "FAIL"]
     if args.repo and failures and not getattr(args, "no_fix", False):
         from . import fixer, github_pr
         source_file = Path(args.source)
@@ -80,14 +80,19 @@ def _run(args) -> int:
             print(f"  ! source file {source_file} not found; skipping fixes")
             warnings.append(f"fix: source {source_file} not found")
         else:
-            src = source_file.read_text(encoding="utf-8")
-            print(f"\n  generating fixes for {len(failures)} failure(s) via Anthropic ...")
-            fixes = fixer.generate_fixes(failures, src, args.source.replace("\\", "/"))
-            detail_by_scenario = {r.scenario: r.detail for r in results}
-            for fix in fixes:
-                if not github_pr.open_fix_pr(args.repo, fix, run_dir,
-                                             detail_by_scenario.get(fix.scenario, "")):
-                    warnings.append(f"pr:{fix.scenario}: not opened (patch saved to run dir)")
+            try:
+                src = source_file.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as exc:
+                print(f"  ! source file {source_file} unreadable ({type(exc).__name__}); skipping fixes")
+                warnings.append(f"fix: source {source_file} unreadable ({type(exc).__name__})")
+            else:
+                print(f"\n  generating fixes for {len(failures)} failure(s) via Anthropic ...")
+                fixes = fixer.generate_fixes(failures, src, args.source.replace("\\", "/"))
+                detail_by_scenario = {r.scenario: r.detail for r in results}
+                for fix in fixes:
+                    if not github_pr.open_fix_pr(args.repo, fix, run_dir,
+                                                 detail_by_scenario.get(fix.scenario, "")):
+                        warnings.append(f"pr:{fix.scenario}: not opened (patch saved to run dir)")
     elif args.repo and getattr(args, "no_fix", False):
         print("\n  --no-fix: skipping fixer and PRs (no source leaves the machine)")
     elif args.repo:
@@ -136,12 +141,12 @@ def _replay(args) -> int:
     run_dir = Path(args.run)
     try:
         data = manifest.load_manifest(run_dir)
+        results = [Result.from_json(r) for r in data["grade"]["results"]]
+        g = Grade.from_json(data["grade"], results)
+        out = report.render_report(g, data["team"], data["target"], data["timestamp"])
     except Exception as exc:  # noqa: BLE001
-        print(f"! could not load manifest at {run_dir}: {exc}")
+        print(f"! could not replay manifest at {run_dir} ({type(exc).__name__})")
         return 3
-    results = [Result.from_json(r) for r in data["grade"]["results"]]
-    g = Grade.from_json(data["grade"], results)
-    out = report.render_report(g, data["team"], data["target"], data["timestamp"])
     print(f"replayed {data['team']}  grade {g.letter} ({g.score})  ->  {out}")
     print(f"  gauntlet {data['gauntlet_version']}  grading v{data['grading_version']}  "
           f"commit {data['git_commit']}  from {run_dir}")

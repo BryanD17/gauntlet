@@ -34,7 +34,8 @@ def validate_target(url: str, allow_remote: bool = False) -> str:
         port = parsed.port
     except ValueError:
         raise ValueError("Target must be a valid HTTP(S) URL") from None
-    if parsed.scheme not in {"http", "https"} or not host or port == 0:
+    if (parsed.scheme not in {"http", "https"} or not host or port == 0
+            or parsed.query or parsed.fragment):
         raise ValueError("Target must be a valid HTTP(S) URL")
     if parsed.username is not None or parsed.password is not None:
         raise ValueError("Target URL must not contain embedded credentials")

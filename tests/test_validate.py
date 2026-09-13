@@ -54,6 +54,7 @@ def test_public_targets_require_explicit_remote(url):
     'http://localhost@169.254.169.254/', 'http://localhost:99999',
     'http://localhost:0', 'http://[not-ipv6]', 'http://',
     'http://local\nhost', 'http://localhost\\@example.com',
+    'http://localhost:9001?route=task', 'http://localhost:9001/#route',
 ])
 def test_invalid_or_metadata_targets_are_always_refused(url, remote):
     with pytest.raises(ValueError):

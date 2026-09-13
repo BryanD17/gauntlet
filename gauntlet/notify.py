@@ -42,7 +42,7 @@ def post_to_slack(team: str, letter: str, score: int, top_failure: str, report_p
             print(f"  ! Slack post failed: HTTP {resp.status_code}")
         return resp.status_code == 200
     except Exception as exc:
-        print(f"  ! Slack post failed: {' '.join(str(exc).splitlines())}")
+        print(f"  ! Slack post failed ({type(exc).__name__})")
         return False
 
 

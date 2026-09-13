@@ -85,5 +85,5 @@ def open_fix_pr(repo_full_name: str, fix, run_dir: Path, evidence_detail: str = 
         print(f"  PR opened: {pr.html_url}")
         return pr.html_url
     except Exception as exc:  # noqa: BLE001 - degrade gracefully
-        _write_patch_fallback(fix, run_dir, str(exc))
+        _write_patch_fallback(fix, run_dir, type(exc).__name__)
         return None
