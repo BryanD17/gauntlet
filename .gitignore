@@ -1,6 +1,7 @@
 .env
 runs/
 site/
+review/
 __pycache__/
 *.pyc
 .pytest_cache/
