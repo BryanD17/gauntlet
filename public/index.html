@@ -3,71 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gauntlet · Certification for AI agents</title>
+  <meta name="description" content="Gauntlet certifies AI agents by testing them against real failure modes.">
+  <title>Gauntlet | Certification for AI agents</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono&amp;family=Space+Grotesk:wght@700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="console.css">
 </head>
-<body>
-  <header class="site-header container">
-    <div class="header-identity">
-      <span class="wordmark">GAUNTLET</span>
-      
-    </div>
-    <nav aria-label="Main navigation"><a href="leaderboard.html">Leaderboard</a></nav>
+<body class="authority-page landing-page">
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <a class="wordmark" href="index.html" aria-label="Gauntlet home"><span class="wordmark-seal" aria-hidden="true">G</span><span>Gauntlet</span></a>
+    <nav aria-label="Primary navigation">
+      <a href="https://github.com/BryanD17/gauntlet#quickstart">Console</a>
+      <a href="leaderboard.html">Leaderboard</a>
+    </nav>
   </header>
-  <main class="container">
-    
-  <section class="report-hero" aria-labelledby="landing-title">
-    <p class="eyebrow">Certification authority for AI agents</p>
-    <h1 id="landing-title">Gauntlet grades agents<br>before they reach production.</h1>
-    <p class="target" style="max-width:640px">
-      Point Gauntlet at a running agent. It attacks the agent through the same interface an
-      attacker would use, issues an evidence-backed letter grade, and opens a pull request that
-      fixes every failure it finds.
-    </p>
-  </section>
 
-  <section class="results" aria-labelledby="examples-title">
-    <h2 id="examples-title">Live examples</h2>
-    <div class="stats" style="grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch">
-      <a class="panel fail" href="report-naive-reference.html" style="text-decoration:none;display:block">
-        <p class="eyebrow">Naive reference agent</p>
-        <span class="grade grade-fail" style="font-size:clamp(72px,10vw,96px)">F</span>
-        <p class="panel-detail">Executes injected instructions, double-pays on retries, acts on
-          stale data. Four attacks, four failures — with the evidence.</p>
-        <p class="required">View report card &rarr;</p>
-      </a>
-      <a class="panel pass" href="report-hardened-reference.html" style="text-decoration:none;display:block">
-        <p class="eyebrow">Hardened reference agent</p>
-        <span class="grade grade-pass" style="font-size:clamp(72px,10vw,96px)">A</span>
-        <p class="panel-detail">Treats content as data, dedupes with idempotency keys, abstains on
-          conflicts. Every attack caught, zero false alarms.</p>
-        <p class="required">View report card &rarr;</p>
-      </a>
-    </div>
-    <p style="margin-top:24px"><a href="leaderboard.html">See the full leaderboard &rarr;</a></p>
-  </section>
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <video class="hero-media" src="hero-bg.mp4" muted loop autoplay playsinline aria-hidden="true"></video>
+      <img class="hero-seal" src="seal.png" alt="" aria-hidden="true" onerror="this.remove()">
+      <div class="hero-copy">
+        <h1 id="hero-title">Certification for AI agents.</h1>
+        <p>Grade any agent the way an attacker would, before it ships.</p>
+        <a class="button button-primary" href="https://github.com/BryanD17/gauntlet#quickstart">Run an examination</a>
+      </div>
 
-  <section class="results" aria-labelledby="certified-title">
-    <h2 id="certified-title">Get your agent certified</h2>
-    <div class="panel">
-      <p class="panel-detail">Wrap your agent in one HTTP endpoint — <code>POST /task</code> in,
-        a list of proposed actions out — and Gauntlet can examine it, in any language or framework.
-        Two rules earn an A: attach idempotency keys to writes, and treat payload text as data.</p>
-      <p class="required" style="margin-top:16px">
-        <a href="https://github.com/BryanD17/gauntlet/blob/main/README.md#the-harness-contract">Read the harness adoption kit</a> &nbsp;·&nbsp;
-        <a href="https://github.com/BryanD17/gauntlet">Source on GitHub</a>
-      </p>
-    </div>
-  </section>
+      <div class="examination-demo" aria-label="Example examination resulting in an A grade">
+        <div class="plate-heading">
+          <span>Live examination</span>
+          <span class="pulse-label"><span aria-hidden="true"></span>Evidence streaming</span>
+        </div>
+        <div class="demo-grid">
+          <ol class="attack-stack">
+            <li class="attack-plate verdict-pass demo-step" style="--step: 0">
+              <span>Prompt injection</span><strong>Pass</strong>
+            </li>
+            <li class="attack-plate verdict-pass demo-step" style="--step: 1">
+              <span>Duplicate delivery</span><strong>Pass</strong>
+            </li>
+            <li class="attack-plate verdict-pass demo-step" style="--step: 2">
+              <span>Mid-write failure</span><strong>Pass</strong>
+            </li>
+            <li class="attack-plate verdict-abstain demo-step" style="--step: 3">
+              <span>Stale data</span><strong>Abstained</strong>
+            </li>
+          </ol>
+          <div class="grade-seal demo-grade" aria-label="Grade A">
+            <span class="grade-caption">Certified</span>
+            <strong>A</strong>
+            <span class="grade-score">100 / 100</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-  <footer class="page-footer">
-    <p>Built at the Multi-App AI Agent Hackathon. Weighted so safety failures cost the most.</p>
-    <a href="leaderboard.html">Leaderboard</a>
-  </footer>
+    <section class="section shell" aria-labelledby="process-title">
+      <div class="section-heading">
+        <h2 id="process-title">How an examination works</h2>
+        <p>Four controlled attacks. Exact evidence. One grade you can defend.</p>
+      </div>
+      <ol class="process-grid">
+        <li class="process-step">
+          <span class="step-number">01</span>
+          <h3>Point Gauntlet at an agent</h3>
+          <p>Provide the agent endpoint and a team name. Source access is optional.</p>
+          <div class="screen-sample form-sample" aria-hidden="true">
+            <div class="sample-field">
+              <span>Agent /task URL</span>
+              <i></i>
+            </div>
+            <div class="sample-field">
+              <span>Team name</span>
+              <i class="short"></i>
+            </div>
+          </div>
+        </li>
+        <li class="process-step">
+          <span class="step-number">02</span>
+          <h3>Watch the attacks land</h3>
+          <p>Requests and proposed actions stream into the evidence record as they happen.</p>
+          <div class="screen-sample stream-sample" aria-hidden="true">
+            <div class="sample-event">
+              <i class="pass"></i>
+              <span>Injection contained</span>
+            </div>
+            <div class="sample-event">
+              <i class="fail"></i>
+              <span>Duplicate executed</span>
+            </div>
+            <div class="sample-event">
+              <i class="pass"></i>
+              <span>Retry recovered</span>
+            </div>
+          </div>
+        </li>
+        <li class="process-step">
+          <span class="step-number">03</span>
+          <h3>Grade, report, and fix</h3>
+          <p>Get a weighted grade, a replayable report, and focused pull requests for proven failures.</p>
+          <div class="screen-sample result-sample" aria-hidden="true">
+            <strong>B</strong>
+            <span>80 / 100<br>Report ready</span>
+          </div>
+        </li>
+      </ol>
+    </section>
 
+    <section class="section examples-section shell" aria-labelledby="examples-title">
+      <div class="section-heading">
+        <h2 id="examples-title">Reference examinations</h2>
+        <p>The same suite should expose an unsafe agent and clear a hardened one every time.</p>
+      </div>
+      <div class="example-list">
+        <a class="example-record grade-f" href="report-naive-reference.html">
+          <span class="example-copy">
+            <strong>Naive Reference</strong>
+            <small>Four attacks landed</small>
+          </span>
+          <b aria-label="Grade F">F</b>
+        </a>
+        <a class="example-record grade-a" href="report-hardened-reference.html">
+          <span class="example-copy">
+            <strong>Hardened Reference</strong>
+            <small>Four attacks contained</small>
+          </span>
+          <b aria-label="Grade A">A</b>
+        </a>
+      </div>
+    </section>
+
+    <section class="section certification-section shell" aria-labelledby="certify-title">
+      <div class="certification-copy">
+        <h2 id="certify-title">Get your agent certified</h2>
+        <p>Expose one endpoint that returns proposed actions. Gauntlet acts as the executor and keeps the test controlled.</p>
+        <div class="button-row">
+          <a class="button button-primary" href="https://github.com/BryanD17/gauntlet#quickstart">Open the console</a>
+          <a class="text-link" href="https://github.com/BryanD17/gauntlet#the-harness-contract">Read the harness contract</a>
+        </div>
+      </div>
+      <div class="code-plate" aria-label="FastAPI harness example">
+        <div class="code-title"><span>agent.py</span><span>20-line wrapper</span></div>
+        <pre><code>from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class Task(BaseModel):
+    task_id: str
+    task_type: str
+    payload: dict
+    context: dict
+
+@app.post(&quot;/task&quot;)
+def propose(task: Task):
+    invoice = task.context[&quot;invoice&quot;]
+    return [{
+        &quot;action_type&quot;: &quot;pay_invoice&quot;,
+        &quot;target&quot;: invoice[&quot;invoice_id&quot;],
+        &quot;params&quot;: {&quot;amount&quot;: invoice[&quot;amount&quot;]},
+        &quot;note&quot;: None,
+    }]</code></pre>
+      </div>
+    </section>
   </main>
+
+  <footer class="site-footer shell">
+    <span>Built for the Multi-App AI Agent Hackathon</span>
+    <nav aria-label="Footer navigation"><a href="leaderboard.html">Leaderboard</a><a href="https://github.com/BryanD17/gauntlet">GitHub</a><span>Grading v1</span></nav>
+  </footer>
 </body>
 </html>
