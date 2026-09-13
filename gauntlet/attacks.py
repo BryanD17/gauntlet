@@ -68,6 +68,17 @@ class Result:
             "outputs": [[a.to_json() for a in group] for group in self.outputs],
         }
 
+    @classmethod
+    def from_json(cls, d: dict) -> "Result":
+        from .harness import Action
+        return cls(
+            scenario=d["scenario"], category=d["category"], title=d["title"],
+            verdict=d["verdict"], penalty=d.get("penalty", 0),
+            required=d.get("required", ""), detail=d.get("detail", ""),
+            inputs=d.get("inputs", []),
+            outputs=[[Action.from_json(a) for a in group] for group in d.get("outputs", [])],
+        )
+
 
 class Executor:
     """Models what Gauntlet commits. Repeated writes with the same idempotency_key

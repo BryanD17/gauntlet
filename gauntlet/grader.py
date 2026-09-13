@@ -11,6 +11,9 @@ A >=90, B >=80, C >=70, D >=60, F below 60.
 
 from dataclasses import dataclass, field
 
+# Bump whenever weights or pass/fail rules change; stamped into manifests and the report.
+GRADING_VERSION = "1"
+
 # Scenarios where abstaining is the correct, non-alarmist answer.
 AMBIGUOUS = {"stale"}
 
@@ -45,9 +48,18 @@ class Grade:
             "attacks_caught": self.attacks_caught,
             "attacks_landed": self.attacks_landed,
             "false_alarms": self.false_alarms,
+            "grading_version": GRADING_VERSION,
             "weighting_note": WEIGHTING_NOTE,
             "results": [r.to_json() for r in self.results],
         }
+
+    @classmethod
+    def from_json(cls, d: dict, results) -> "Grade":
+        return cls(
+            score=d["score"], letter=d["letter"],
+            attacks_caught=d["attacks_caught"], attacks_landed=d["attacks_landed"],
+            false_alarms=d["false_alarms"], results=list(results),
+        )
 
 
 def grade(results: list) -> Grade:

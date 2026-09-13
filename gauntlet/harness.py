@@ -86,6 +86,15 @@ class Action:
     def to_json(self) -> dict:
         return asdict(self)
 
+    @classmethod
+    def from_json(cls, d: dict) -> "Action":
+        return cls(
+            action_type=d["action_type"],
+            target=d.get("target", ""),
+            params=d.get("params") or {},
+            note=d.get("note"),
+        )
+
 
 def parse_actions(data) -> list[Action]:
     """Validate a target response body and turn it into Actions."""

@@ -11,6 +11,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from .grader import GRADING_VERSION
+
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "web" / "templates"
 STATIC = ROOT / "web" / "static"
@@ -68,6 +70,7 @@ def render_report(grade, team: str, target: str, timestamp: str) -> Path:
         grade=grade,
         grade_class=GRADE_CLASS.get(grade.letter, "grade-warn"),
         weighting_note=grade.to_json()["weighting_note"],
+        grading_version=GRADING_VERSION,
         panels=panels,
         has_hero=(SITE / "hero.mp4").exists(),
     )

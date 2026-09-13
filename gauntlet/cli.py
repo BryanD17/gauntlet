@@ -9,6 +9,7 @@ step degrades gracefully with a printed warning; the run itself never crashes.
 
 import argparse
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -16,12 +17,14 @@ from dotenv import load_dotenv
 
 from .runner import run_suite
 from .grader import grade
-from . import report
+from . import report, manifest
 from .notify import post_to_slack
 
 
 def _run(args) -> int:
     load_dotenv()
+    started = time.monotonic()
+    warnings: list[str] = []
     ts_display = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     print(f"\nGAUNTLET  ::  examining {args.team}  ->  {args.target}\n")
@@ -51,27 +54,33 @@ def _run(args) -> int:
     except Exception as exc:  # noqa: BLE001
         print(f"  ! report rendering failed: {exc}")
         report_path = None
+        warnings.append(f"report: render failed ({exc})")
 
     # 4. Slack.
     top_failure = next((r.title for r in results if r.landed), "None")
-    post_to_slack(args.team, g.letter, g.score, top_failure,
-                  report_path=str(report_path) if report_path else None)
+    if not post_to_slack(args.team, g.letter, g.score, top_failure,
+                         report_path=str(report_path) if report_path else None):
+        warnings.append("slack: not delivered")
 
     # 5. Fix PRs (only if a repo is given and there were failures).
     failures = [r for r in results if r.verdict in ("FAIL", "ERROR")]
-    if args.repo and failures:
+    if args.repo and failures and not getattr(args, "no_fix", False):
         from . import fixer, github_pr
         source_file = Path(args.source)
         if not source_file.exists():
             print(f"  ! source file {source_file} not found; skipping fixes")
+            warnings.append(f"fix: source {source_file} not found")
         else:
             src = source_file.read_text(encoding="utf-8")
             print(f"\n  generating fixes for {len(failures)} failure(s) via Anthropic ...")
             fixes = fixer.generate_fixes(failures, src, args.source.replace("\\", "/"))
             detail_by_scenario = {r.scenario: r.detail for r in results}
             for fix in fixes:
-                github_pr.open_fix_pr(args.repo, fix, run_dir,
-                                      detail_by_scenario.get(fix.scenario, ""))
+                if not github_pr.open_fix_pr(args.repo, fix, run_dir,
+                                             detail_by_scenario.get(fix.scenario, "")):
+                    warnings.append(f"pr:{fix.scenario}: not opened (patch saved to run dir)")
+    elif args.repo and getattr(args, "no_fix", False):
+        print("\n  --no-fix: skipping fixer and PRs (no source leaves the machine)")
     elif args.repo:
         print("\n  no failures - no fix PRs needed.")
     else:
@@ -85,8 +94,43 @@ def _run(args) -> int:
                              report_path=str(report_path) if report_path else None)
         for u in urls:
             print(f"  Linear issue: {u}")
+        if not urls:
+            warnings.append("linear: no issues filed")
 
-    print(f"\n  evidence    {run_dir}\n  done.\n")
+    # 7. Run manifest (self-contained; enables offline replay).
+    try:
+        mpath = manifest.write_manifest(
+            run_dir, target=args.target, team=args.team, timestamp=ts_display,
+            grade=g, seed=run_dir.name, wall_time_s=time.monotonic() - started,
+            warnings=warnings)
+        print(f"\n  manifest    {mpath}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ! manifest write failed: {exc}")
+
+    if warnings:
+        print("  warnings:")
+        for w in warnings:
+            print(f"    - {w}")
+    print(f"  evidence    {run_dir}\n  done.\n")
+    return 0
+
+
+def _replay(args) -> int:
+    """Re-render a report card purely from a stored run manifest. No external calls."""
+    from .attacks import Result
+    from .grader import Grade
+    run_dir = Path(args.run)
+    try:
+        data = manifest.load_manifest(run_dir)
+    except Exception as exc:  # noqa: BLE001
+        print(f"! could not load manifest at {run_dir}: {exc}")
+        return 3
+    results = [Result.from_json(r) for r in data["grade"]["results"]]
+    g = Grade.from_json(data["grade"], results)
+    out = report.render_report(g, data["team"], data["target"], data["timestamp"])
+    print(f"replayed {data['team']}  grade {g.letter} ({g.score})  ->  {out}")
+    print(f"  gauntlet {data['gauntlet_version']}  grading v{data['grading_version']}  "
+          f"commit {data['git_commit']}  from {run_dir}")
     return 0
 
 
@@ -99,9 +143,17 @@ def main(argv=None) -> int:
     run.add_argument("--team", required=True, help="team name for the report and leaderboard")
     run.add_argument("--source", default="agents/naive_agent.py",
                      help="path to the target's source file (local read + repo path)")
+    run.add_argument("--no-fix", action="store_true",
+                     help="skip the fixer and PRs entirely (no source leaves the machine)")
+
+    rep = sub.add_parser("replay", help="re-render a report card from a stored run, offline")
+    rep.add_argument("--run", required=True, help="path to a runs/<timestamp> directory")
+
     args = parser.parse_args(argv)
     if args.command == "run":
         return _run(args)
+    if args.command == "replay":
+        return _replay(args)
     parser.print_help()
     return 1
 
