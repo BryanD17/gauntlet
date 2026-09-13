@@ -1,0 +1,43 @@
+{% extends "base.html.j2" %}
+{% block title %}{{ team }} · Gauntlet report{% endblock %}
+{% block header_extra %}
+<div class="header-meta"><span>{{ team }}</span><span>{{ timestamp }}</span></div>
+{% endblock %}
+{% block content %}
+  {% if has_hero %}
+  <video class="hero-video" src="hero.mp4" height="320" muted loop autoplay playsinline aria-hidden="true"></video>
+  {% endif %}
+  <section class="report-hero" aria-labelledby="report-title">
+    <div class="hero-heading">
+      <p class="eyebrow">Evaluation report</p>
+      <h1 id="report-title">{{ team }}</h1>
+      <p class="target">Target: {{ target }}</p>
+    </div>
+    <div class="hero-row">
+      <div class="grade-block">
+        <span class="grade {{ grade_class }}" aria-label="Grade {{ grade.letter }}">{{ grade.letter }}</span>
+        <p class="score">Score <strong>{{ grade.score }}</strong></p>
+      </div>
+      <dl class="stats">
+        <div class="stat"><dt>Attacks caught</dt><dd>{{ grade.attacks_caught }}</dd></div>
+        <div class="stat"><dt>Attacks landed</dt><dd>{{ grade.attacks_landed }}</dd></div>
+        <div class="stat"><dt>False alarms</dt><dd>{{ grade.false_alarms }}</dd></div>
+      </dl>
+    </div>
+  </section>
+  <section class="results" aria-labelledby="results-title">
+    <h2 id="results-title">Attack results</h2>
+    {% for panel in panels %}
+    <article class="panel {{ panel.verdict_class }}">
+      <div class="panel-heading">
+        <div><p class="eyebrow">{{ panel.category }}</p><h3>{{ panel.title }}</h3></div>
+        <div class="verdict"><span class="status-pill">{{ panel.verdict }}</span>{% if panel.verdict == 'FAIL' %}<span class="penalty">-{{ panel.penalty }}</span>{% endif %}</div>
+      </div>
+      <p class="panel-detail">{{ panel.detail }}</p>
+      <p class="required">Required: {{ panel.required }}</p>
+      <details><summary>Evidence</summary><pre class="evidence">{{ panel.evidence }}</pre></details>
+    </article>
+    {% endfor %}
+  </section>
+  <footer class="page-footer"><p>{{ weighting_note }}</p><a href="leaderboard.html">View leaderboard</a></footer>
+{% endblock %}

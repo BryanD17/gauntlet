@@ -1,0 +1,26 @@
+{% extends "base.html.j2" %}
+{% block title %}Leaderboard · Gauntlet{% endblock %}
+{% block content %}
+  <section class="leaderboard" aria-labelledby="leaderboard-title">
+    <div class="hero-heading"><p class="eyebrow">Gauntlet standings</p><h1 id="leaderboard-title">Leaderboard</h1></div>
+    <div class="table-scroll" role="region" aria-label="Ranked team results" tabindex="0">
+      <table>
+        <thead><tr><th scope="col">Rank</th><th scope="col">Team</th><th scope="col">Grade</th><th scope="col">Score</th><th scope="col">Attacks survived</th><th scope="col">Report</th></tr></thead>
+        <tbody>
+          {% for row in rows %}
+          <tr{% if row.rank == 1 %} class="top"{% endif %}>
+            <td class="rank">{{ row.rank }}</td>
+            <th scope="row">{{ row.team }}<span class="row-timestamp">{{ row.timestamp }}</span></th>
+            <td class="table-grade"><span class="{{ row.grade_class }}">{{ row.letter }}</span></td>
+            <td class="numeric">{{ row.score }}</td>
+            <td class="numeric">{{ row.attacks_survived }}/{{ row.attacks_total }}</td>
+            <td><a href="{{ row.report }}" aria-label="View report for {{ row.team }}">View report</a></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="empty-state">No evaluations yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}
