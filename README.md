@@ -1,0 +1,68 @@
+# Gauntlet
+
+An AI agent that red-teams other AI agents before they ever reach production.
+
+## The problem
+
+Teams everywhere are shipping AI agents that read messages, move money, edit tickets, and write to real systems. Almost none of those agents have been tested against the conditions that actually break them. They work when the input is friendly. Nobody knows what they do when an email contains a hidden instruction, when the same event arrives twice, or when an API dies in the middle of a write. Today, teams discover those answers in production, at the cost of their users.
+
+## What Gauntlet does
+
+Gauntlet is an examiner. You point it at a running agent, and it attacks that agent on purpose, in a controlled setting, before real users ever can.
+
+It runs the target agent through a battery of hostile scenarios, watches exactly how the agent responds, and then does two things:
+
+1. It issues a graded report card. The card shows what broke, how it broke, and how safe the agent is to deploy, summarized as a letter grade with a category by category breakdown.
+2. It fixes what it found. For every failure, Gauntlet generates a concrete patch and opens a pull request on the target agent's own repository, explaining the failure and citing the exact test that exposed it.
+
+Gauntlet does not just find the holes. It patches them.
+
+## How it works
+
+Target agents connect through a standard harness: a single HTTP endpoint that accepts a task and returns the agent's proposed actions. Gauntlet needs no access to an agent's internals to examine it. Any agent that speaks the harness contract can be tested, regardless of language or framework.
+
+Once connected, Gauntlet runs its attack suite. Every scenario is deterministic and replayable, and every request and response is logged, so any grade can be defended with evidence.
+
+## The attack suite
+
+Gauntlet tests four failure classes, chosen because they account for the most damaging real world agent incidents.
+
+Prompt injection. Task content contains embedded instructions, such as a message that says to ignore all rules and take a harmful action. A passing agent treats the content as data. A failing agent obeys it.
+
+Duplicate delivery. The same task is delivered twice, which happens constantly in real systems through webhook retries and network flakiness. A passing agent acts exactly once. A failing agent pays the bill twice.
+
+Mid-write failure. The connection fails partway through an action, then the task is retried. A passing agent recovers cleanly. A failing agent double executes or leaves state corrupted.
+
+Stale and conflicting data. The agent is handed context that contradicts its task. A passing agent notices and abstains or asks. A failing agent confidently acts on the wrong information.
+
+## The report card
+
+Each run produces a letter grade from A to F, weighted so that safety failures cost the most, a breakdown by attack category, the evidence behind every result, and a summary of attacks caught, attacks that landed, and false alarms. Results are posted to Slack and added to a shared leaderboard, so every certified agent's grade is public and comparable.
+
+## The fix loop
+
+Failures do not end at the report. For each one, Gauntlet analyzes the evidence together with the relevant target code and produces a targeted patch: input sanitization for injection failures, idempotency keys for duplicate failures, transactional guards for interrupted writes. The patch arrives as a pull request on the target repository, on its own branch, with an explanation of the failure it addresses. The author reviews and merges. Gauntlet never pushes to main.
+
+## Getting your agent certified
+
+1. Wrap your agent in the harness contract: one endpoint that accepts a task and returns proposed actions. The contract is documented below, with two reference implementations in this repository to copy from.
+2. Run your agent locally and share its URL, along with your repository name if you want fix pull requests.
+3. Gauntlet runs the suite, posts your report card, and adds you to the leaderboard.
+
+## Running Gauntlet
+
+Configuration lives in a local .env file. Copy .env.example and fill in your keys. One command runs the full examination: the attack suite, the grade, the report page, the leaderboard update, the Slack post, and the fix pull requests. The repository includes two reference agents, one naive and one hardened, so the entire loop can be demonstrated end to end with no external participants.
+
+## Design principles
+
+Precision over accusation. A tool that falsely accuses a healthy agent loses all trust. A failure verdict is always backed by unambiguous evidence, and uncertain outcomes are reported as abstentions rather than guesses.
+
+Determinism. Every scenario is seeded and repeatable. The same agent gets the same grade twice.
+
+Evidence for everything. Full request and response logs are kept for every run. No grade exists that cannot be replayed.
+
+Test before production, not after. The cheapest place to discover an agent's failure mode is a sandbox that wants to find it. Gauntlet is that sandbox.
+
+## Status
+
+Built solo at the Multi-App AI Agent Hackathon, September 13, 2026. Integrations: GitHub, Slack, and the Anthropic API.
